@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monty Hall Game Theory Widget</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 900px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .game-area {
+            margin: 30px 0;
+        }
+        
+        .doors-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .door {
+            width: 120px;
+            height: 160px;
+            background: linear-gradient(135deg, #8B4513, #A0522D);
+            border: 4px solid #654321;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: white;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .door:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .door.selected {
+            border-color: #4CAF50;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+        }
+        
+        .door.opened {
+            background: linear-gradient(135deg, #fff, #f0f0f0);
+            color: #333;
+            border-color: #ddd;
+        }
+        
+        .door-content {
+            font-size: 3em;
+            animation: reveal 0.5s ease-in-out;
+        }
+        
+        @keyframes reveal {
+            from { opacity: 0; transform: scale(0.5); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .controls {
+            margin: 30px 0;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn.secondary {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+        }
+        
+        .game-message {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            font-size: 1.1em;
+            color: #333;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .explanation {
+            background: #e8f4f8;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 30px 0;
+            text-align: left;
+            border-left: 4px solid #667eea;
+        }
+        
+        .explanation h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .explanation p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        
+        .reset-btn {
+            background: #6c757d;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .game-container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .door {
+                width: 100px;
+                height: 140px;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>The Monty Hall Problem</h1>
+        <p class="subtitle">A classic probability puzzle that challenges intuition</p>
+        
+        <div class="game-area">
+            <div class="game-message" id="gameMessage">
+                Choose a door! Behind one door is a car 🚗, behind the others are goats 🐐
+            </div>
+            
+            <div class="doors-container">
+                <div class="door" id="door1" onclick="selectDoor(1)">
+                    <span>Door 1</span>
+                </div>
+                <div class="door" id="door2" onclick="selectDoor(2)">
+                    <span>Door 2</span>
+                </div>
+                <div class="door" id="door3" onclick="selectDoor(3)">
+                    <span>Door 3</span>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button class="btn" id="stayBtn" onclick="stayWithChoice()" disabled>Stay with Choice</button>
+                <button class="btn secondary" id="switchBtn" onclick="switchChoice()" disabled>Switch Door</button>
+                <button class="btn reset-btn" onclick="resetGame()">New Game</button>
+            </div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalGames">0</div>
+                <div class="stat-label">Total Games</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="stayWins">0</div>
+                <div class="stat-label">Stay Wins</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="switchWins">0</div>
+                <div class="stat-label">Switch Wins</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="winRate">0%</div>
+                <div class="stat-label">Overall Win Rate</div>
+            </div>
+        </div>
+        
+        <div class="explanation">
+            <h3>Understanding the Monty Hall Problem</h3>
+            <p><strong>The Setup:</strong> You choose one of three doors. The host (who knows what's behind each door) opens one of the remaining doors that has a goat.</p>
+            <p><strong>The Key Insight:</strong> When you first choose, you have a 1/3 chance of being right. The two doors you didn't choose have a combined 2/3 chance of having the car.</p>
+            <p><strong>Why Switching Wins:</strong> When the host opens a door with a goat, that 2/3 probability doesn't disappear—it transfers entirely to the remaining unopened door!</p>
+            <p><strong>The Math:</strong> Staying wins 1/3 of the time, switching wins 2/3 of the time. Play multiple rounds to see this pattern emerge!</p>
+        </div>
+    </div>
+
+    <script>
+        let gameState = {
+            carDoor: 0,
+            selectedDoor: 0,
+            openedDoor: 0,
+            phase: 'selecting', // 'selecting', 'choosing', 'finished'
+            stats: {
+                totalGames: 0,
+                stayWins: 0,
+                switchWins: 0,
+                totalWins: 0
+            }
+        };
+
+        function initGame() {
+            // Randomly place the car behind one of the three doors
+            gameState.carDoor = Math.floor(Math.random() * 3) + 1;
+            gameState.selectedDoor = 0;
+            gameState.openedDoor = 0;
+            gameState.phase = 'selecting';
+            
+            // Reset door appearance
+            for (let i = 1; i <= 3; i++) {
+                const door = document.getElementById(`door${i}`);
+                door.classList.remove('selected', 'opened');
+                door.innerHTML = `<span>Door ${i}</span>`;
+                door.onclick = () => selectDoor(i);
+            }
+            
+            // Reset buttons
+            document.getElementById('stayBtn').disabled = true;
+            document.getElementById('switchBtn').disabled = true;
+            
+            // Reset message
+            document.getElementById('gameMessage').textContent = 'Choose a door! Behind one door is a car 🚗, behind the others are goats 🐐';
+        }
+
+        function selectDoor(doorNumber) {
+            if (gameState.phase !== 'selecting') return;
+            
+            gameState.selectedDoor = doorNumber;
+            gameState.phase = 'choosing';
+            
+            // Highlight selected door
+            document.getElementById(`door${doorNumber}`).classList.add('selected');
+            
+            // Host opens a door with a goat (not the selected door, not the car door)
+            let possibleDoors = [1, 2, 3].filter(d => d !== doorNumber && d !== gameState.carDoor);
+            gameState.openedDoor = possibleDoors[Math.floor(Math.random() * possibleDoors.length)];
+            
+            // Show the opened door
+            const openedDoorElement = document.getElementById(`door${gameState.openedDoor}`);
+            openedDoorElement.classList.add('opened');
+            openedDoorElement.innerHTML = '<div class="door-content">🐐</div>';
+            openedDoorElement.onclick = null;
+            
+            // Enable choice buttons
+            document.getElementById('stayBtn').disabled = false;
+            document.getElementById('switchBtn').disabled = false;
+            
+            // Update message
+            document.getElementById('gameMessage').textContent = `I've opened Door ${gameState.openedDoor} with a goat! Now you can stay with Door ${doorNumber} or switch to the other door. What do you choose?`;
+        }
+
+        function stayWithChoice() {
+            finishGame('stay');
+        }
+
+        function switchChoice() {
+            // Find the remaining door
+            const remainingDoor = [1, 2, 3].find(d => d !== gameState.selectedDoor && d !== gameState.openedDoor);
+            gameState.selectedDoor = remainingDoor;
+            
+            // Update visual selection
+            document.querySelectorAll('.door').forEach(door => door.classList.remove('selected'));
+            document.getElementById(`door${remainingDoor}`).classList.add('selected');
+            
+            finishGame('switch');
+        }
+
+        function finishGame(action) {
+            gameState.phase = 'finished';
+            
+            // Disable buttons
+            document.getElementById('stayBtn').disabled = true;
+            document.getElementById('switchBtn').disabled = true;
+            
+            // Show all doors
+            for (let i = 1; i <= 3; i++) {
+                const door = document.getElementById(`door${i}`);
+                if (i !== gameState.openedDoor) {
+                    door.classList.add('opened');
+                    if (i === gameState.carDoor) {
+                        door.innerHTML = '<div class="door-content">🚗</div>';
+                    } else {
+                        door.innerHTML = '<div class="door-content">🐐</div>';
+                    }
+                }
+                door.onclick = null;
+            }
+            
+            // Update stats
+            gameState.stats.totalGames++;
+            const won = gameState.selectedDoor === gameState.carDoor;
+            
+            if (won) {
+                gameState.stats.totalWins++;
+                if (action === 'stay') {
+                    gameState.stats.stayWins++;
+                } else {
+                    gameState.stats.switchWins++;
+                }
+            }
+            
+            // Update message
+            const result = won ? 'Congratulations! You won the car!' : 'Sorry, you got a goat!';
+            const strategy = action === 'stay' ? 'stayed' : 'switched';
+            document.getElementById('gameMessage').textContent = `${result} You ${strategy} and the car was behind Door ${gameState.carDoor}.`;
+            
+            // Update stats display
+            updateStatsDisplay();
+        }
+
+        function updateStatsDisplay() {
+            document.getElementById('totalGames').textContent = gameState.stats.totalGames;
+            document.getElementById('stayWins').textContent = gameState.stats.stayWins;
+            document.getElementById('switchWins').textContent = gameState.stats.switchWins;
+            
+            const winRate = gameState.stats.totalGames > 0 ? 
+                Math.round((gameState.stats.totalWins / gameState.stats.totalGames) * 100) : 0;
+            document.getElementById('winRate').textContent = winRate + '%';
+        }
+
+        function resetGame() {
+            initGame();
+        }
+
+        // Initialize the game when the page loads
+        initGame();
+    </script>
+</body>
+</html>
